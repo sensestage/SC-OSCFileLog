@@ -2,6 +2,7 @@
 OSC message recorder and player
 (c) 2013 - Marije Baalman
 
+// this class needs the FileLog quark to function
 
 
 // ------ recording
