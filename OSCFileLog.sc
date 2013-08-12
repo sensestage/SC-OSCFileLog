@@ -15,7 +15,7 @@ GPL3 license
 n = NetAddr.new( "localhost", NetAddr.langPort );
 (
 Task({ 10.do{
-	n.sendMsg( "/hello", 0, 20.rand, 19.rand, 3, 4, 2.003);
+	n.sendMsg( "/hello", 0, 20.rand, 19.rand, "hello", 3, 4, 2.003);
 	1.0.rand.max(0.01).wait;
 }}).play;
 );
@@ -33,7 +33,7 @@ n = NetAddr.new( "localhost", NetAddr.langPort );
 OSCFunc.trace( true );
 
 // create a player
-~oscplayer = OSCFileLogPlayer.new( "/home/nescivi/test_130321_004905", n ); // arguments are the file/folder we previously recorded, and the target netaddress
+~oscplayer = OSCFileLogPlayer.new( "/home/nescivi/SuperCollider/test_130812_121049", n ); // arguments are the file/folder we previously recorded, and the target netaddress
 
 // and play it
 ~oscplayer.play;
@@ -76,12 +76,14 @@ OSCFileLog{
 	}
 
 	open{ |fn|
-		timelogfile = MultiFileWriter.new( fn ++ "_"++Date.localtime.stamp++".txt" ).zipSingle_( false ).tarBundle_( false );
+        var filename = fn ++ "_"++Date.localtime.stamp++".txt";
+		timelogfile = MultiFileWriter.new( filename ).zipSingle_( false ).tarBundle_( false );
 		timelogfile.open;
 		recTime = true;
-		oscRecFunc = { |msg, time| ~timelog.writeLine( time, msg[0], msg.copyToEnd( 1 ) ) };
+		oscRecFunc = { |msg, time| this.writeLine( time, msg[0], msg.copyToEnd( 1 ) ) };
 		this.resetTime;
 		thisProcess.addOSCRecvFunc( oscRecFunc );
+        "recording OSC data to %\n".postf( timelogfile.pathDir );
 	}
 
 	resetTime{
@@ -89,7 +91,7 @@ OSCFileLog{
 	}
 
 	writeLine{ |time,tag,data|
-		timelogfile.writeLine( [time - offset, tag.asCompileString ] ++ data );
+        timelogfile.writeLine( [time - offset, tag.asCompileString ] ++ data.collect{ |it| it.asCompileString } );
 	}
 
 	close{
