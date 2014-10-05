@@ -61,7 +61,7 @@ OSCFunc.trace( true );
 
 OSCFileLog{
 
-	var <recTime;
+	var <recording;
 	var <timelogfile;
 	var <offset;
 	var <oscRecFunc;
@@ -79,7 +79,7 @@ OSCFileLog{
         var filename = fn ++ "_"++Date.localtime.stamp++".txt";
 		timelogfile = MultiFileWriter.new( filename ).zipSingle_( false ).tarBundle_( false );
 		timelogfile.open;
-		recTime = true;
+		recording = true;
 		oscRecFunc = { |msg, time| this.writeLine( time, msg[0], msg.copyToEnd( 1 ) ) };
 		this.resetTime;
 		thisProcess.addOSCRecvFunc( oscRecFunc );
@@ -95,13 +95,13 @@ OSCFileLog{
 	}
 
 	close{
-		recTime = false;
+		recording = false;
 		timelogfile.close;
 		thisProcess.removeOSCRecvFunc( oscRecFunc );
 	}
 }
 
-// reads a data network log and plays it
+// reads an oscfilelog and plays it
 
 OSCFileLogPlayer{
 	var <reader;

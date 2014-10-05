@@ -1,0 +1,108 @@
+TITLE:: OSCFileLog
+summary:: a simple class to record osc messages
+categories:: OSC, Logging
+related:: Classes/OSCFileLogPlayer, Classes/MultiFileWriter
+
+DESCRIPTION::
+OSCFileLog allows you to record OSC messages to later be played back with link::Classes/OSCFileLogPlayer::.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance of OSCFileLog.
+
+ARGUMENT:: fn
+The filename to use.
+
+
+INSTANCEMETHODS::
+
+private:: init
+
+
+METHOD:: recording
+whether or not the OSCFileLog is currently recording.
+
+returns:: a Boolean
+
+
+METHOD:: close
+Close the OSCFileLog and stop recording incoming data.
+
+
+METHOD:: open
+Open a new writer for OSC messages. Called when instantiating a new instance.
+
+ARGUMENT:: fn
+The filename to write to. A date stamp and extension will be added to this name.
+
+METHOD:: resetTime
+Resets the offset time to the current time.
+
+METHOD:: offset
+The time at which the recording started.
+
+
+METHOD:: timelogfile
+The MultiFileWriter with which the data is written.
+
+
+
+METHOD:: oscRecFunc
+The function that records the osc data. This function is added to the processes main OSC receiver.
+
+METHOD:: writeLine
+Writes one line of data to the logfile. Called from oscRecFunc;
+
+ARGUMENT:: time
+the OSC timestamp
+
+ARGUMENT:: tag
+The OSC tag
+
+ARGUMENT:: data
+The OSC data (an Array)
+
+
+EXAMPLES::
+
+code::
+// to record, create a OSCFileLog
+~timelog = OSCFileLog.new( "test" ); // "test" is the base for the filename, a datetime stamp will be automatically added to the name
+
+// send some osc data to test:
+n = NetAddr.new( "localhost", NetAddr.langPort );
+(
+Task({ 10.do{
+	n.sendMsg( "/hello", 0, 20.rand, 19.rand, "hello", 3, 4, 2.003);
+	1.0.rand.max(0.01).wait;
+}}).play;
+);
+
+// close the file again:
+~timelog.close;
+
+
+//------- playback:
+
+// set up our target net address (here we just send to SC again
+n = NetAddr.new( "localhost", NetAddr.langPort );
+
+// we trace it to see if we get it, just to show that it works:
+OSCFunc.trace( true );
+
+// create a player
+~oscplayer = OSCFileLogPlayer.new( "/home/nescivi/SuperCollider/test_130812_121049", n ); // arguments are the file/folder we previously recorded, and the target netaddress
+
+// and play it
+~oscplayer.play;
+
+~oscplayer.pause; // pause playback
+
+~oscplayer.resume; // resume playback
+
+~oscplayer.stop; // stop playback
+
+~oscplayer.reset; // go back to start
+::
