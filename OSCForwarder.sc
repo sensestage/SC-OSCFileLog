@@ -1,3 +1,12 @@
+/*
+/// fill in the processing port where you want to have the data:
+~oscforwarder = OSCForwarder.new( NetAddr.new( "127.0.0.1", 8000 ) );
+// stop forwarding
+~oscforwarder.stop;
+// start forwarding againg
+~oscforwarder.start;
+*/
+
 OSCForwarder {
 
 	var <>address;
@@ -23,7 +32,4 @@ OSCForwarder {
 	stop{
 		thisProcess.removeOSCRecvFunc( oscFwdFunc );
 	}
-
-
-
 }

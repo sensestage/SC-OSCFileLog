@@ -163,7 +163,7 @@ OSCFileLogPlayer{
 		};
 	}
 
-		readLine{ |update=true|
+	readLine{ |update=true|
 		var dt,line,data;
 		var oldid;
 		var oldTime = curTime;
