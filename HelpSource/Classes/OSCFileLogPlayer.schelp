@@ -1,0 +1,132 @@
+TITLE:: OSCFileLogPlayer
+summary:: a simple class to play back osc messages from a file
+categories:: Logging
+related:: Classes/OSCFileLog, Classes/OSCForwarder, Classes/MultiFilePlayer, Classes/FilePlayer
+
+DESCRIPTION::
+OSCFileLogPlayer allows you to play back OSC messages previously recorded with link::Classes/OSCFileLog::.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Open an OSCFileLog file for playback.
+
+ARGUMENT:: fn
+The filename to use.
+
+ARGUMENT:: addr
+The link::Classes/NetAddr:: to send the OSC messages to.
+
+returns:: an instance of OSCFileLogPlayer.
+
+
+INSTANCEMETHODS::
+private:: init
+
+METHOD:: play
+Start the playback of the OSC messages.
+
+ARGUMENT:: clock
+The clock on which to play the task playing back the messages.
+
+
+METHOD:: pause
+Pause the playback of the messages.
+
+
+METHOD:: resume
+Resume the playback of the messages.
+
+
+METHOD:: reset
+Reset to the start of the file for playback.
+
+METHOD:: stop
+Stop the playback task.
+
+METHOD:: close
+Close the file for playback
+
+
+
+
+METHOD:: fileClass
+The type of link::Classes/FilePlayer:: that is used. This is inferred from the filename.
+
+
+METHOD:: reader
+The FilePlayer that is used to read the file.
+
+
+METHOD:: curTime
+The current time in the file that we are at.
+
+
+METHOD:: readLine
+Reads one line from the file.
+
+ARGUMENT:: update
+Whether or not to send an OSC message.
+
+returns:: a Float indicating the delta time until the next message.
+
+METHOD:: targetaddr
+The link::Classes/NetAddr:: to which the messages will be sent.
+
+
+METHOD:: open
+Open the FilePlayer; this is called from the initialisation method.
+
+ARGUMENT:: fn
+The path of the file to open.
+
+
+METHOD:: checkFileClass
+Checks based on the filename that is given what kind of FilePlayer to use.
+
+ARGUMENT:: fn
+The path of the file to open.
+
+
+EXAMPLES::
+
+code::
+// to record, create a OSCFileLog
+~timelog = OSCFileLog.new( "test" ); // "test" is the base for the filename, a datetime stamp will be automatically added to the name
+
+// send some osc data to test:
+n = NetAddr.new( "localhost", NetAddr.langPort );
+(
+Task({ 10.do{
+    n.sendMsg( "/hello", 0, 20.rand, 19.rand, "hello", 3, 4, 2.003);
+    1.0.rand.max(0.01).wait;
+}}).play;
+);
+
+// close the file again:
+~timelog.close;
+
+
+//------- playback:
+
+// set up our target net address (here we just send to SC again
+n = NetAddr.new( "localhost", NetAddr.langPort );
+
+// we trace it to see if we get it, just to show that it works:
+OSCFunc.trace( true );
+
+// create a player
+~oscplayer = OSCFileLogPlayer.new( "/home/nescivi/SuperCollider/test_130812_121049", n ); // arguments are the file/folder we previously recorded, and the target netaddress
+
+// and play it
+~oscplayer.play;
+
+~oscplayer.pause; // pause playback
+
+~oscplayer.resume; // resume playback
+
+~oscplayer.stop; // stop playback
+
+~oscplayer.reset; // go back to start
+::

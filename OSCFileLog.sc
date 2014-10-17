@@ -112,8 +112,8 @@ OSCFileLogPlayer{
 //	var <deltaT=0;
 
 	var <fileClass;
-	var <hasStamp = false;
-	var <hasExtraTab = false;
+	// var <hasStamp = false;
+	// var <hasExtraTab = false;
 
 	var <targetaddr;
 
