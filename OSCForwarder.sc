@@ -3,7 +3,7 @@
 ~oscforwarder = OSCForwarder.new( NetAddr.new( "127.0.0.1", 8000 ) );
 // stop forwarding
 ~oscforwarder.stop;
-// start forwarding againg
+// start forwarding again
 ~oscforwarder.start;
 */
 
