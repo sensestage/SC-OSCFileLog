@@ -1,0 +1,95 @@
+TITLE:: OSCForwarder
+summary:: Simple class to forward all OSC messages SuperCollider receives to another NetAddr.
+categories:: Control, OSC
+related:: Classes/OSCFileLogPlayer
+
+DESCRIPTION::
+OSCForwarder allows you to forward all OSC messages that SuperCollider receives to another NetAddr. This can be useful for debugging purposes, or in some cases with the OSCFileLogPlayer, where you want both SuperCollider and another program to receive all the messages that are received.
+
+WARNING:: Do not forward to a NetAddr that SuperCollider itself is listening on, as that will create an infinite loop.
+::
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new OSCForwarder.
+
+ARGUMENT:: addr
+A link::Classes/NetAddr:: to send the OSC messages to.
+
+returns:: an OSCForwarder
+
+
+INSTANCEMETHODS::
+private:: init
+
+METHOD:: address
+The link::Classes/NetAddr:: to forward the OSC messages to.
+
+returns:: a NetAddr
+
+METHOD:: start
+Start forwarding OSC messages. This method is called automatically upon initialization.
+
+METHOD:: stop
+Stop forwarding OSC messages.
+
+
+
+EXAMPLES::
+
+code::
+/// fill in the processing port where you want to have the data:
+~oscforwarder = OSCForwarder.new( NetAddr.new( "127.0.0.1", 8000 ) );
+// stop forwarding
+~oscforwarder.stop;
+// start forwarding again
+~oscforwarder.start;
+::
+
+An example with link::Classes/OSCFileLogPlayer:::
+
+code::
+
+// to record, create a OSCFileLog
+~timelog = OSCFileLog.new( "test" ); // "test" is the base for the filename, a datetime stamp will be automatically added to the name
+
+// send some osc data to test:
+n = NetAddr.new( "localhost", NetAddr.langPort );
+(
+Task({ 10.do{
+    n.sendMsg( "/hello", 0, 20.rand, 19.rand, "hello", 3, 4, 2.003);
+    1.0.rand.max(0.01).wait;
+}}).play;
+);
+
+// close the file again:
+~timelog.close;
+
+
+//------- playback:
+
+// set up our target net address (here we just send to SC again
+n = NetAddr.new( "localhost", NetAddr.langPort );
+
+// we trace it to see if we get it, just to show that it works:
+OSCFunc.trace( true );
+
+// create a player
+~oscplayer = OSCFileLogPlayer.new( "/home/nescivi/SuperCollider/test_130812_121049", n ); // arguments are the file/folder we previously recorded, and the target netaddress, in this case SuperCollider itself.
+
+~oscforwarder = OSCForwarder.new( NetAddr( "localhost", 12000 ); // e.g. Processing
+
+// and play it
+~oscplayer.play;
+
+~oscplayer.pause; // pause playback
+
+~oscplayer.resume; // resume playback
+
+~oscplayer.stop; // stop playback
+
+~oscplayer.reset; // go back to start
+
+::
