@@ -417,4 +417,111 @@ OSCFileLogPlayer{
 */
 }
 
+
+OSCTagFileLogPlayer{
+	var <reader;
+	var playTask;
+
+	var <curTime=0;
+
+	var <>speed = 1;
+
+	var <fileClass;
+
+	var <targetaddr;
+
+	var <oscTag;
+
+	*new{ |tag,fn,addr|
+		^super.new.init( tag, fn, addr );
+	}
+
+	init{ |tag,fn,addr|
+		oscTag = tag;
+		targetaddr = addr;
+		this.checkFileClass( fn );
+		this.open( fn );
+	}
+
+	checkFileClass{ |fn|
+		var tar,txt;
+		var path = PathName(fn);
+		tar = (path.extension == "tar");
+		txt = (path.extension == "txt");
+		if ( tar ){
+			fileClass = MultiFilePlayer;
+		}{
+			if ( txt ){
+				fileClass = TabFilePlayer;
+			}{
+				fileClass = MultiFilePlayer;
+			}
+		};
+	}
+
+	open{ |fn|
+		if ( playTask.notNil ){ playTask.stop; };
+		if ( reader.notNil ){ reader.close; };
+
+		reader = fileClass.new( fn );
+
+		playTask = Task{
+			var dt = 0;
+			while( { dt.notNil }, {
+				dt = this.readLine;
+				if ( dt.notNil ){
+					(dt*speed).wait;
+				}
+			});
+		};
+	}
+
+	readLine{ |update=true|
+		var dt,line,data;
+		var oldid;
+		var oldTime = curTime;
+		oldid = reader.curid;
+		line = reader.nextInterpret;
+		if ( line.isNil ){
+			"At end of data".postln;
+			^nil;
+		};
+		curTime = line.first;
+		if ( update ){
+			// line.postcs;
+			if ( line[1] == oscTag ){
+				targetaddr.sendMsg( *line.copyToEnd( 1 ) );
+			}
+		};
+		dt = curTime - oldTime;
+		^dt;
+	}
+
+	play{ |clock|
+		playTask.start( clock );
+	}
+
+	pause{
+		playTask.pause;
+	}
+
+	resume{
+		playTask.resume;
+	}
+
+	stop{
+		playTask.stop;
+		this.reset;
+	}
+
+	reset{
+		curTime = 0;
+		reader.reset;
+		playTask.reset;
+	}
+
+	close{
+		playTask.stop;
+		reader.close;
+	}
 }
