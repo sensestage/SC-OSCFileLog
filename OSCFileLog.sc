@@ -122,7 +122,106 @@ OSCFileLog{
 }
 
 // reads an oscfilelog and plays it
+OSCTagFileLog{
 
+	var <recording;
+	var <timelogfile;
+	var <offset;
+	var <oscRecFunc;
+	var <oscTag;
+
+	*new{ |tag, fn|
+		^super.new.init( tag, fn );
+	}
+
+	init{ |tag, fn|
+		oscTag = tag;
+		fn = fn ? "OSCTagFileLog";
+		this.open(fn);
+	}
+
+	open{ |fn|
+        var filename = fn ++ "_"++Date.localtime.stamp++".txt";
+		timelogfile = MultiFileWriter.new( filename ).zipSingle_( false ).tarBundle_( false );
+		timelogfile.open;
+		recording = true;
+		this.resetTime;
+		oscRecFunc = OSCFunc.new( { |msg, time| this.writeLine( time, msg[0], msg.copyToEnd( 1 ) ) }, oscTag );
+		// thisProcess.addOSCRecvFunc( oscRecFunc );
+        "recording OSC data to %\n".postf( timelogfile.pathDir );
+	}
+
+	resetTime{
+		offset = Process.elapsedTime;
+	}
+
+	writeLine{ |time,tag,data|
+        timelogfile.writeLine( [time - offset, tag.asCompileString ] ++ data.collect{ |it| it.asCompileString } );
+	}
+
+	close{
+		recording = false;
+		timelogfile.close;
+		// thisProcess.removeOSCRecvFunc( oscRecFunc );
+		oscRecFunc.free;
+	}
+}
+
+
+OSCMultiTagFileLog{
+
+	var <recording;
+	var <timelogfile;
+	var <offset;
+	var <oscRecFuncs;
+	var <oscTags;
+
+	*new{ |tags, fn|
+		^super.new.init( tags, fn );
+	}
+
+	init{ |tags, fn|
+		oscTags = tags;
+		fn = fn ? "OSCMultiTagFileLog";
+		this.open(fn);
+	}
+
+	open{ |fn|
+        var filename = fn ++ "_"++Date.localtime.stamp++".txt";
+		timelogfile = MultiFileWriter.new( filename ).zipSingle_( false ).tarBundle_( false );
+		timelogfile.open;
+		recording = true;
+		this.resetTime;
+		oscRecFuncs = oscTags.collect{ |tag|
+			OSCFunc.new( { |msg, time| this.writeLine( time, msg[0], msg.copyToEnd( 1 ) ) }, tag );
+		};
+		// thisProcess.addOSCRecvFunc( oscRecFunc );
+        "recording OSC data to %\n".postf( timelogfile.pathDir );
+	}
+
+	enable{ |onoff=true|
+		if ( onoff ){
+			oscRecFuncs.do{ |it| it.enable };
+		}{
+			oscRecFuncs.do{ |it| it.disable };
+		}
+	}
+
+	resetTime{
+		offset = Process.elapsedTime;
+	}
+
+	writeLine{ |time,tag,data|
+        timelogfile.writeLine( [time - offset, tag.asCompileString ] ++ data.collect{ |it| it.asCompileString } );
+	}
+
+	close{
+		recording = false;
+		timelogfile.close;
+		// thisProcess.removeOSCRecvFunc( oscRecFunc );
+		oscRecFuncs.do{ |it| it.free; };
+	}
+}
 OSCFileLogPlayer{
 	var <reader;
 	var playTask;
