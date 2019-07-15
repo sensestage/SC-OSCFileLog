@@ -24,6 +24,26 @@ Task({ 10.do{
 ~timelog.close;
 
 
+/// record just one specific tag
+
+// to record, create a OSCFileLog
+~timelog = OSCTagFileLog.new( "/hello", "test" ); // "test" is the base for the filename, a datetime stamp will be automatically added to the name
+
+// send some osc data to test:
+n = NetAddr.new( "localhost", NetAddr.langPort );
+(
+Task({ 10.do{
+	n.sendMsg( "/hello", 0, 20.rand, 19.rand, "hello", 3, 4, 2.003);
+	1.0.rand.max(0.01).wait;
+	n.sendMsg( "/hello2", 0, 20.rand, 19.rand, "hello", 3, 4, 2.003);
+	1.0.rand.max(0.01).wait;
+}}).play;
+);
+
+// close the file again:
+~timelog.close;
+
+
 //------- playback:
 
 // set up our target net address (here we just send to SC again
