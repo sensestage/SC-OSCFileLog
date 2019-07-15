@@ -230,6 +230,7 @@ OSCFileLogPlayer{
 	var <curTime=0;
 	var <startTime;
 //	var <deltaT=0;
+	var <>speed = 1;
 
 	var <fileClass;
 	// var <hasStamp = false;
@@ -277,7 +278,7 @@ OSCFileLogPlayer{
 			while( { dt.notNil }, {
 				dt = this.readLine;
 				if ( dt.notNil ){
-					dt.wait;
+					(dt*speed).wait;
 				}
 			});
 		};
