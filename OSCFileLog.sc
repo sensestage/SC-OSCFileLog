@@ -78,7 +78,6 @@ OSCFunc.trace( true );
 
 */
 
-
 OSCFileLog{
 
 	var <recording;
@@ -91,7 +90,7 @@ OSCFileLog{
 	}
 
 	init{ |fn|
-		fn = fn ? "TimeFileLog";
+		fn = fn ? "OSCFileLog";
 		this.open(fn);
 	}
 
@@ -121,7 +120,6 @@ OSCFileLog{
 	}
 }
 
-// reads an oscfilelog and plays it
 OSCTagFileLog{
 
 	var <recording;
@@ -222,6 +220,8 @@ OSCMultiTagFileLog{
 		oscRecFuncs.do{ |it| it.free; };
 	}
 }
+
+// reads an oscfilelog and plays it
 OSCFileLogPlayer{
 	var <reader;
 	var playTask;
