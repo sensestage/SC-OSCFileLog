@@ -228,6 +228,7 @@ OSCFileLogPlayer{
 
 //	var <timeMap;
 	var <curTime=0;
+	var <startTime;
 //	var <deltaT=0;
 
 	var <fileClass;
@@ -323,8 +324,16 @@ OSCFileLogPlayer{
 		this.reset;
 	}
 
+	readFirstLine {
+		var line;
+		reader.reset;
+		line = reader.nextInterpret;
+		startTime = line.first;
+		this.reset;
+	}
+
 	reset{
-		curTime = 0;
+		curTime = startTime;
 		reader.reset;
 //		this.readHeader;
 		playTask.reset;
@@ -404,4 +413,6 @@ OSCFileLogPlayer{
 		};
 	}
 */
+}
+
 }
