@@ -281,6 +281,8 @@ OSCFileLogPlayer{
 				}
 			});
 		};
+
+		this.readFirstLine;
 	}
 
 	readLine{ |update=true|
