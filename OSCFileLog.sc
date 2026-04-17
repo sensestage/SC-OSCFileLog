@@ -84,6 +84,7 @@ OSCFileLog{
 	var <timelogfile;
 	var <offset;
 	var <oscRecFunc;
+	var <>timemode = \timestamp;
 
 	*new{ |fn|
 		^super.new.init( fn );
@@ -99,7 +100,13 @@ OSCFileLog{
 		timelogfile = MultiFileWriter.new( filename ).zipSingle_( false ).tarBundle_( false );
 		timelogfile.open;
 		recording = true;
-		oscRecFunc = { |msg, time| this.writeLine( time, msg[0], msg.copyToEnd( 1 ) ) };
+		oscRecFunc = { |msg, time|
+			if ( timemode == \timestamp ){ // uses the timestamp of the message
+				this.writeLine( time, msg[0], msg.copyToEnd( 1 ) );
+			}{ // uses the elapsed time in supercollider
+				this.writeLine( Process.elapsedTime, msg[0], msg.copyToEnd( 1 ) );
+			}
+		};
 		this.resetTime;
 		thisProcess.addOSCRecvFunc( oscRecFunc );
         "recording OSC data to %\n".postf( timelogfile.pathDir );
