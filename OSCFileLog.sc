@@ -75,7 +75,6 @@ OSCFunc.trace( true );
 ~oscplayer.close;
 
 
-
 */
 
 OSCFileLog{
@@ -110,6 +109,55 @@ OSCFileLog{
 		this.resetTime;
 		thisProcess.addOSCRecvFunc( oscRecFunc );
         "recording OSC data to %\n".postf( timelogfile.pathDir );
+	}
+
+	resetTime{
+		offset = Process.elapsedTime;
+	}
+
+	writeLine{ |time,tag,data|
+        timelogfile.writeLine( [time - offset, tag.asCompileString ] ++ data.collect{ |it| it.asCompileString } );
+	}
+
+	close{
+		recording = false;
+		timelogfile.close;
+		thisProcess.removeOSCRecvFunc( oscRecFunc );
+	}
+}
+
+OSCSingleFileLog{
+
+	var <recording;
+	var <timelogfile;
+	var <offset;
+	var <oscRecFunc;
+	var <>timemode = \timestamp;
+
+	*new{ |fn|
+		^super.new.init( fn );
+	}
+
+	init{ |fn|
+		fn = fn ? "OSCFileLog";
+		this.open(fn);
+	}
+
+	open{ |fn|
+        var filename = fn ++ "_"++Date.localtime.stamp++".txt";
+		timelogfile = TabFileWriter.new( filename );
+		// timelogfile.open;
+		recording = true;
+		oscRecFunc = { |msg, time|
+			if ( timemode == \timestamp ){ // uses the timestamp of the message
+				this.writeLine( time, msg[0], msg.copyToEnd( 1 ) );
+			}{ // uses the elapsed time in supercollider
+				this.writeLine( Process.elapsedTime, msg[0], msg.copyToEnd( 1 ) );
+			}
+		};
+		this.resetTime;
+		thisProcess.addOSCRecvFunc( oscRecFunc );
+        "recording OSC data to %\n".postf( timelogfile );
 	}
 
 	resetTime{
